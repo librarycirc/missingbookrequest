@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Missing Monograph</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#2e3b4e;
+  --surface:#3a4a5c;
+  --surface2:#455568;
+  --teal:#4db6ac;
+  --teal-light:#80cbc4;
+  --teal-pale:rgba(77,182,172,.12);
+  --teal-border:rgba(77,182,172,.35);
+  --red:#ba0c2f;
+  --red-pale:rgba(186,12,47,.15);
+  --red-border:rgba(186,12,47,.45);
+  --gold:#f0b429;
+  --gold-pale:rgba(240,180,41,.12);
+  --green:#4caf7d;
+  --green-pale:rgba(76,175,125,.12);
+  --green-border:rgba(76,175,125,.45);
+  --amber:#f59e0b;
+  --amber-pale:rgba(245,158,11,.12);
+  --amber-border:rgba(245,158,11,.45);
+  --text:#e8edf2;
+  --text-muted:#8fa3b8;
+  --border:rgba(255,255,255,.1);
+  --r:10px;--rl:16px;
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  padding:1.5rem 1rem 3rem;
+}
+.wrap{max-width:680px;margin:0 auto}
+.screen{display:none}.screen.active{display:block}
+
+/* TOP BAR */
+.top-bar{
+  background:linear-gradient(135deg,#1e2d3d 0%,#2a3a4d 100%);
+  border:1px solid var(--teal-border);
+  border-radius:var(--rl);padding:1.25rem 1.5rem;
+  margin-bottom:1.25rem;text-align:center;
+  position:relative;overflow:hidden;
+}
+.top-bar::before{
+  content:'⚡  📚  ⚡';position:absolute;
+  top:8px;left:0;right:0;text-align:center;
+  font-size:11px;color:rgba(77,182,172,.2);letter-spacing:10px;
+}
+.top-bar h1{font-size:18px;font-weight:800;color:var(--teal);position:relative}
+.top-bar p{font-size:11px;color:var(--teal-light);margin-top:3px;text-transform:uppercase;letter-spacing:.08em;position:relative}
+.teal-line{height:1px;background:linear-gradient(90deg,transparent,var(--teal),transparent);width:50%;margin:.5rem auto 0}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.5rem;margin-bottom:1.25rem}
+
+/* START SCREEN */
+.start-emoji{font-size:56px;text-align:center;margin-bottom:.75rem}
+.start-title{font-size:20px;font-weight:800;color:var(--teal);text-align:center;margin-bottom:.5rem}
+.start-sub{font-size:14px;color:var(--text-muted);text-align:center;line-height:1.7;margin-bottom:1.25rem}
+.scenario-box{
+  background:var(--teal-pale);border:1px solid var(--teal-border);
+  border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.25rem;
+  font-size:13px;line-height:1.8;color:var(--text);
+}
+.scenario-box strong{color:var(--teal-light)}
+.rules-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+.rule-item{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:var(--r);padding:.85rem .75rem;text-align:center;
+}
+.rule-icon{font-size:22px;margin-bottom:4px}
+.rule-val{font-size:12px;font-weight:700;color:var(--teal)}
+.rule-lbl{font-size:11px;color:var(--text-muted);margin-top:1px}
+
+/* BUTTONS */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:12px;font-size:14px;font-weight:700;
+  border-radius:var(--r);border:none;cursor:pointer;
+  font-family:inherit;transition:all .15s;
+}
+.btn-teal{background:var(--teal);color:#1e2d3d}.btn-teal:hover{background:var(--teal-light)}
+.btn-outline{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}.btn-outline:hover{background:var(--teal-pale)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{filter:brightness(1.1)}
+.btn-row{display:flex;gap:10px}.btn-row .btn{flex:1}
+
+/* HUD */
+.hud{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:1rem;
+}
+.hud-top{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;flex-wrap:wrap;gap:8px;
+}
+.hud-prof{display:flex;align-items:center;gap:12px}
+.prof-emoji{font-size:38px;transition:all .4s}
+.prof-info strong{font-size:14px;color:var(--teal-light);display:block}
+.prof-info span{font-size:12px;color:var(--text-muted)}
+.hud-stats{display:flex;gap:8px}
+.stat-pill{
+  font-size:12px;font-weight:700;padding:4px 12px;
+  border-radius:20px;background:rgba(77,182,172,.15);
+  color:var(--teal-light);border:1px solid var(--teal-border);
+}
+.stat-pill.danger{background:var(--red-pale);color:#ff6b7a;border-color:var(--red-border)}
+
+/* STRESS METER — circular */
+.meter-section{display:flex;align-items:center;gap:16px}
+.stress-ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+.stress-ring-wrap svg{transform:rotate(-90deg)}
+.stress-track-circle{fill:none;stroke:rgba(255,255,255,.08);stroke-width:7}
+.stress-fill-circle{
+  fill:none;stroke-width:7;stroke-linecap:round;
+  stroke-dasharray:188.5;stroke-dashoffset:188.5;
+  transition:stroke-dashoffset .6s ease,stroke .4s ease;
+  stroke:var(--teal);
+}
+.stress-center-text{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;line-height:1;
+}
+.stress-pct{font-size:14px;font-weight:800;color:var(--teal-light)}
+.stress-lbl-sm{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.meter-right{flex:1}
+.meter-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.strikes-row{display:flex;gap:6px;margin-bottom:6px}
+.strike-icon{font-size:18px;transition:all .3s}
+.patience-bar-wrap{background:rgba(255,255,255,.08);border-radius:20px;height:6px;overflow:hidden}
+.patience-bar{height:6px;border-radius:20px;background:var(--teal);transition:width .5s,background .4s}
+.patience-label{font-size:11px;color:var(--teal-light);margin-top:4px}
+
+/* ROUND DOTS */
+.round-progress{display:flex;gap:6px;margin-bottom:1rem}
+.rp-dot{flex:1;height:5px;border-radius:20px;background:rgba(255,255,255,.1);transition:background .3s}
+.rp-dot.win{background:var(--teal)}
+.rp-dot.loss{background:var(--red)}
+.rp-dot.current{background:var(--teal);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* TIMER BAR */
+.timer-bar-wrap{background:rgba(255,255,255,.06);border-radius:20px;height:4px;margin-bottom:1rem;overflow:hidden}
+.timer-bar{height:4px;border-radius:20px;background:var(--teal);transition:width .5s linear,background .3s}
+
+/* CHAT */
+.chat-area{
+  background:#1e2d3d;border:1px solid var(--teal-border);
+  border-radius:var(--rl);padding:1rem;margin-bottom:1rem;
+  min-height:110px;display:flex;flex-direction:column;gap:10px;
+}
+.bubble-prof{
+  max-width:82%;padding:10px 14px;border-radius:14px;
+  border-bottom-left-radius:4px;font-size:14px;line-height:1.55;
+  background:linear-gradient(135deg,#1a4f8a,#1e3a5f);
+  color:#e8edf2;align-self:flex-start;
+  border:1px solid rgba(77,182,172,.2);
+}
+.bubble-you{
+  max-width:82%;padding:10px 14px;border-radius:14px;
+  border-bottom-right-radius:4px;font-size:14px;line-height:1.55;
+  background:rgba(77,182,172,.15);border:1px solid var(--teal-border);
+  color:var(--text);align-self:flex-end;
+}
+.bubble-system{
+  padding:7px 14px;border-radius:10px;font-size:12px;font-style:italic;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  color:var(--text-muted);align-self:center;text-align:center;
+}
+.bubble-name{font-size:10px;font-weight:700;opacity:.6;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+
+/* CHOICES */
+.choices-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.choices-label{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.pressure-tag{font-size:11px;color:var(--amber);font-weight:600;background:var(--amber-pale);border:1px solid var(--amber-border);padding:3px 9px;border-radius:20px}
+.choices{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.choice{
+  display:flex;align-items:flex-start;gap:12px;padding:12px 14px;
+  border:1.5px solid var(--border);border-radius:var(--r);
+  cursor:pointer;transition:all .15s;
+  background:rgba(255,255,255,.03);
+  text-align:left;font-family:inherit;width:100%;color:var(--text);
+}
+.choice:hover:not(:disabled){border-color:var(--teal);background:var(--teal-pale)}
+.choice:disabled{cursor:default}
+.choice-letter{
+  width:26px;height:26px;border-radius:50%;
+  font-size:12px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:rgba(77,182,172,.15);color:var(--teal-light);
+  transition:all .15s;
+}
+.choice-text{font-size:13px;line-height:1.45;padding-top:2px;color:var(--text)}
+.choice.res-win{border-color:var(--green-border);background:var(--green-pale)}
+.choice.res-win .choice-letter{background:var(--green);color:#fff}
+.choice.res-win .choice-text{color:#80e0a7;font-weight:600}
+.choice.res-loss{border-color:var(--red-border);background:var(--red-pale)}
+.choice.res-loss .choice-letter{background:var(--red);color:#fff}
+.choice.res-loss .choice-text{color:#ff8a9a;font-weight:600}
+.choice.res-dim{opacity:.35}
+.pro-badge{
+  display:inline-block;font-size:10px;font-weight:700;
+  background:rgba(240,180,41,.15);color:var(--gold);
+  border:1px solid rgba(240,180,41,.35);
+  padding:1px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;
+}
+
+/* FEEDBACK */
+.fb-box{border-radius:var(--r);padding:13px 16px;font-size:13px;line-height:1.7;display:none;margin-bottom:1rem}
+.fb-box.show{display:block}
+.fb-win{background:var(--green-pale);border:1px solid var(--green-border);color:#80e0a7}
+.fb-loss{background:var(--red-pale);border:1px solid var(--red-border);color:#ff8a9a}
+.fb-partial{background:var(--amber-pale);border:1px solid var(--amber-border);color:#fcd369}
+.fb-box strong{display:block;margin-bottom:4px;font-size:14px}
+.pro-cite{
+  display:inline-block;font-size:11px;font-weight:700;
+  background:rgba(77,182,172,.15);color:var(--teal-light);
+  padding:2px 8px;border-radius:20px;margin-top:6px;
+}
+
+/* END SCREENS */
+.end-box{border-radius:var(--rl);padding:2rem 1.5rem;text-align:center;margin-bottom:1.25rem;position:relative;overflow:hidden}
+.end-box.success{background:linear-gradient(135deg,#1a3a2e,#1e4a3a);border:2px solid var(--teal)}
+.end-box.gameover{background:linear-gradient(135deg,#3a1a1e,#4a1e24);border:2px solid var(--red)}
+.end-box::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.03)}
+.end-icon{font-size:56px;margin-bottom:.75rem;position:relative}
+.end-title{font-size:20px;font-weight:800;margin-bottom:.5rem;position:relative}
+.end-title.t-success{color:var(--teal)}
+.end-title.t-gameover{color:#ff6b7a}
+.end-sub{font-size:14px;line-height:1.7;position:relative}
+.end-sub.s-success{color:var(--teal-light)}
+.end-sub.s-gameover{color:#ffaab5}
+
+.badge-strip{
+  background:linear-gradient(135deg,#1e2d3d,#2a3d52);
+  border:1px solid var(--teal-border);border-radius:var(--rl);
+  padding:1.25rem;text-align:center;margin-bottom:1.25rem;
+}
+.badge-icon{font-size:40px;margin-bottom:.35rem}
+.badge-name{font-size:16px;font-weight:800;color:var(--gold);margin-bottom:.2rem}
+.badge-sub{font-size:12px;color:var(--text-muted)}
+
+.end-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+.es-item{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--r);padding:.85rem .5rem;text-align:center}
+.es-val{font-size:20px;font-weight:800;color:var(--teal)}
+.es-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+.tips-box{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.25rem;
+  font-size:13px;line-height:1.75;color:var(--text-muted);
+}
+.tips-box strong{color:var(--teal-light);display:block;margin-bottom:4px}
+
+@media(max-width:480px){body{padding:1rem .75rem 2rem}.card{padding:1.1rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top-bar">
+    <h1>📚 The Missing Monograph</h1>
+    <div class="teal-line"></div>
+    <p>Library Service Simulation · Professional Skills Training</p>
+  </div>
+
+  <!-- START -->
+  <div class="screen active" id="screen-start">
+    <div class="card">
+      <div class="start-emoji">😤</div>
+      <div class="start-title">Meet Professor Punctual</div>
+      <div class="start-sub">A high-stakes patron service scenario. The professor is authoritative, impatient — and he has a seminar in 45 minutes.</div>
+      <div class="scenario-box">
+        📋 <strong>Situation:</strong> Professor Punctual approaches the desk with a printout. The system shows <em>"Theories of Institutional Power"</em> as <strong>Available</strong> — but it is not on the shelf.<br><br>
+        ⏱ <strong>Pressure:</strong> He has a seminar in 45 minutes and needs the book to prepare. He is already visibly irritated.<br><br>
+        🎯 <strong>Your goal:</strong> Navigate 5 rounds of dialogue. Offer professional solutions — a shelf trace, e-book, or ILL request — without losing his patience entirely.
+      </div>
+      <div class="rules-grid">
+        <div class="rule-item"><div class="rule-icon">💬</div><div class="rule-val">5 Rounds</div><div class="rule-lbl">of dialogue</div></div>
+        <div class="rule-item"><div class="rule-icon">⚡</div><div class="rule-val">3 Strikes</div><div class="rule-lbl">then game over</div></div>
+        <div class="rule-item"><div class="rule-icon">🏅</div><div class="rule-val">Badge</div><div class="rule-lbl">if you succeed</div></div>
+      </div>
+      <button class="btn btn-teal" onclick="startGame()">Begin Simulation →</button>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div class="hud">
+      <div class="hud-top">
+        <div class="hud-prof">
+          <div class="prof-emoji" id="prof-emoji">😤</div>
+          <div class="prof-info">
+            <strong>Prof. Punctual</strong>
+            <span id="prof-mood">Mood: Impatient</span>
+          </div>
+        </div>
+        <div class="hud-stats">
+          <div class="stat-pill">Round <span id="round-num">1</span>/5</div>
+          <div class="stat-pill" id="strikes-pill">⚡ Strikes: <span id="strikes-num">0</span>/3</div>
+        </div>
+      </div>
+      <div class="meter-section">
+        <div class="stress-ring-wrap">
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle class="stress-track-circle" cx="36" cy="36" r="30"/>
+            <circle class="stress-fill-circle" id="stress-circle" cx="36" cy="36" r="30"/>
+          </svg>
+          <div class="stress-center-text">
+            <div class="stress-pct" id="stress-pct">0%</div>
+            <div class="stress-lbl-sm">Stress</div>
+          </div>
+        </div>
+        <div class="meter-right">
+          <div class="meter-title">🧠 Professor's Patience</div>
+          <div class="strikes-row" id="strikes-row">
+            <span class="strike-icon">🟢</span>
+            <span class="strike-icon">🟢</span>
+            <span class="strike-icon">🟢</span>
+          </div>
+          <div class="patience-bar-wrap">
+            <div class="patience-bar" id="patience-bar" style="width:100%"></div>
+          </div>
+          <div class="patience-label" id="patience-label">Patience: Holding</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="round-progress" id="round-progress"></div>
+    <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
+    <div class="chat-area" id="chat-area"></div>
+
+    <div class="choices-header">
+      <div class="choices-label">Your response</div>
+      <div class="pressure-tag">⏱ 45 min until seminar</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="fb-box" id="fb-box"></div>
+    <button class="btn btn-teal" id="next-btn" style="display:none" onclick="nextRound()">Continue →</button>
+  </div>
+
+  <!-- WIN -->
+  <div class="screen" id="screen-win">
+    <div class="end-box success">
+      <div class="end-icon">✅</div>
+      <div class="end-title t-success">SUCCESS</div>
+      <div class="end-sub s-success" id="win-sub">Professor was satisfied with the alternative solution.</div>
+    </div>
+    <div class="badge-strip">
+      <div class="badge-icon">🏅</div>
+      <div class="badge-name">Service Excellence Award</div>
+      <div class="badge-sub">Patron Crisis Management · Library Professional Skills</div>
+    </div>
+    <div class="card">
+      <div class="end-stats">
+        <div class="es-item"><div class="es-val" id="win-correct"></div><div class="es-lbl">Perfect</div></div>
+        <div class="es-item"><div class="es-val" id="win-strikes"></div><div class="es-lbl">Strikes</div></div>
+        <div class="es-item"><div class="es-val" id="win-score"></div><div class="es-lbl">Score</div></div>
+      </div>
+      <div class="tips-box">
+        <strong>✅ Key Takeaways</strong>
+        When a book is missing from the shelf: (1) Offer a <strong>shelf trace</strong> immediately, (2) check for an <strong>e-book or digital version</strong>, (3) initiate an <strong>ILL rush request</strong>, (4) stay calm and solution-focused — never make the patron feel dismissed.
+      </div>
+      <button class="btn btn-outline" onclick="restartGame()">↺ Play Again</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="screen" id="screen-gameover">
+    <div class="end-box gameover">
+      <div class="end-icon">🚨</div>
+      <div class="end-title t-gameover">GAME OVER</div>
+      <div class="end-sub s-gameover">The Professor has filed a formal complaint with the Dean.</div>
+    </div>
+    <div class="card">
+      <p style="font-size:14px;font-weight:700;color:#ff8a9a;margin-bottom:8px">📋 What went wrong?</p>
+      <div id="go-review" style="font-size:13px;color:var(--text-muted);line-height:1.75;margin-bottom:1.25rem"></div>
+      <div class="tips-box">
+        <strong>🔑 The Golden Protocol for Missing Items</strong>
+        1. Apologize sincerely for the system discrepancy.<br>
+        2. Immediately initiate a shelf trace — check nearby shelves, returns cart, and hold shelf.<br>
+        3. Offer a digital/e-book alternative while the trace is underway.<br>
+        4. If unavailable digitally, initiate an ILL rush request.<br>
+        5. Never blame the patron, the system, or colleagues.
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="restartGame()">↺ Try Again</button>
+        <button class="btn btn-red" onclick="showScreen('screen-start')">← Back to Start</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+var ROUNDS = [
+  {
+    says:"Excuse me. Your system says 'Theories of Institutional Power' is available. I've just checked the shelf — it is NOT there. I have a seminar in 45 minutes. This is completely unacceptable.",
+    emoji:'😤',mood:'Impatient',
+    choices:[
+      {l:'A',text:"Sorry, sometimes the system is just wrong. Books go missing all the time — there's not much we can do about it.",type:'loss',pro:false,
+       fb:"<strong>🚨 Strike! Dismissive Response.</strong> Telling a patron 'there's not much we can do' is never acceptable. It signals indifference and closes off all possible solutions. Always lead with action, not resignation."},
+      {l:'B',text:"I sincerely apologize for this discrepancy, Professor. Let me initiate a shelf trace right now — I'll check the returns cart, nearby shelves, and the hold area. While I do that, can I look up whether a digital version is available?",type:'win',pro:true,
+       fb:"<strong>✅ Perfect Opening.</strong> You apologized without over-explaining, took immediate ownership, proposed a concrete action (shelf trace), and offered a parallel solution (digital version). This is exactly how to handle a missing item report."},
+      {l:'C',text:"Are you sure you looked in the right section? The call number can be tricky — maybe you missed it.",type:'loss',pro:false,
+       fb:"<strong>🚨 Strike! Implying Patron Error.</strong> Suggesting the professor looked in the wrong place is condescending. Even if true, this is never the right first response. Lead with empathy and action."}
+    ]
+  },
+  {
+    says:"A shelf trace?! I don't have time for a shelf trace. I need this book in the next 30 minutes. What else can you actually do?",
+    emoji:'😠',mood:'Frustrated',
+    choices:[
+      {l:'A',text:"Then I'm afraid there's nothing more I can offer you today. The system says available but the book isn't here — we can't fabricate a copy.",type:'loss',pro:false,
+       fb:"<strong>🚨 Strike! Giving Up.</strong> There are always more options. Declaring defeat after one obstacle is unacceptable service. A patron in distress needs solutions, not finality."},
+      {l:'B',text:"Absolutely — let me check our database for an e-book or PDF version accessible through the library portal right now. I can pull it up on this terminal for you in under two minutes.",type:'win',pro:true,
+       fb:"<strong>✅ Excellent Pivot.</strong> You acknowledged his time constraint and immediately proposed a faster digital alternative. Offering to pull it up yourself shows proactive service — not just pointing him in a direction."},
+      {l:'C',text:"I understand, but a shelf trace is standard procedure. I need to follow protocol before I can offer anything else.",type:'partial',pro:false,
+       fb:"<strong>⚠️ Partial — Too Rigid.</strong> Protocol matters, but patron urgency must be met with flexibility. Lead with the faster solution first, then note that the trace will continue in the background."}
+    ]
+  },
+  {
+    says:"There's no e-book. I already checked. Do you have any idea what it feels like to prepare a seminar with nothing? This library is failing its faculty.",
+    emoji:'😡',mood:'Angry',
+    choices:[
+      {l:'A',text:"I hear your frustration, and I take that seriously. Let me contact two things simultaneously — our subject librarian who may have a personal copy or know of another source, and I'll place an emergency ILL request flagged as urgent. Some partner libraries can deliver a digital scan within the hour.",type:'win',pro:true,
+       fb:"<strong>✅ Crisis-Level Response.</strong> You validated his frustration without being defensive, escalated to the subject librarian, and introduced the ILL emergency option with a realistic timeframe. Specific, calm, and proactive."},
+      {l:'B',text:"I'm sorry you feel that way, but our staff works very hard. We can't control when books go missing.",type:'loss',pro:false,
+       fb:"<strong>🚨 Strike! Defensive Response.</strong> Defending the library instead of solving the problem is a classic service failure. The patron doesn't care how hard staff works — he needs a solution."},
+      {l:'C',text:"You could try checking another university library nearby — they might have a copy available.",type:'partial',pro:false,
+       fb:"<strong>⚠️ Partial — Offloading the Problem.</strong> Suggesting he visit another library passes the burden back to the patron. You should exhaust all in-house options first and offer to make contact on his behalf."}
+    ]
+  },
+  {
+    says:"An ILL request?! That takes days. Do you even understand what 'urgent' means? I have 20 minutes left.",
+    emoji:'🤬',mood:'Livid',
+    choices:[
+      {l:'A',text:"You're right that standard ILL takes 2–3 days — but our emergency ILL can request a digital chapter scan from a partner institution within 45–90 minutes. I'm submitting it as Priority 1 right now. Simultaneously, let me check if our subject librarian has a desk copy you could consult on-site today.",type:'win',pro:true,
+       fb:"<strong>✅ Under Pressure, Still Professional.</strong> You corrected the misconception about ILL timing, offered the emergency option with a realistic estimate, and kept the subject librarian as a parallel solution."},
+      {l:'B',text:"I understand — 20 minutes is very tight. There's honestly not much I can do in that timeframe. I'm really sorry.",type:'loss',pro:false,
+       fb:"<strong>🚨 Strike! Giving Up Under Pressure.</strong> When a patron is at peak frustration, this is exactly when you must hold steady. Apologizing without action at this stage will trigger a formal complaint."},
+      {l:'C',text:"Can you tell me exactly which chapters you need? I can print relevant sections for in-library use right now while the ILL request processes.",type:'win',pro:true,
+       fb:"<strong>✅ Creative Problem-Solving.</strong> Offering to print specific sections for in-library consultation is a practical, immediate solution that shows genuine effort to meet his specific need."}
+    ]
+  },
+  {
+    says:"Fine. I'll take whatever you can get me. But I want this on record — a 'Available' book was not available. This is a systemic failure.",
+    emoji:'😒',mood:'Grudgingly Cooperative',
+    choices:[
+      {l:'A',text:"You're absolutely right, and I'm logging this as a catalog discrepancy report right now. These reports go directly to our systems team for investigation. Here is a reference number for your records. Is there anything else I can provide while we wait for the scanned chapter?",type:'win',pro:true,
+       fb:"<strong>✅ Perfect Resolution.</strong> You validated his systemic concern, took formal action, gave him a tangible artifact (reference number), and followed through. This turns a complaint into a resolved incident."},
+      {l:'B',text:"I'll make a note of it. These things happen. The chapter scan should arrive soon.",type:'partial',pro:false,
+       fb:"<strong>⚠️ Partial — Minimizing a Valid Concern.</strong> 'These things happen' dismisses a legitimate complaint. Log it formally, give a reference number, and acknowledge the failure properly."},
+      {l:'C',text:"I appreciate your patience, Professor. I've submitted the discrepancy report, flagged the ILL as urgent, and I'll personally email you the moment the digital scan is available — estimated within the hour. Is that acceptable?",type:'win',pro:true,
+       fb:"<strong>✅ Gold Standard Closing.</strong> Personal follow-up, a clear timeline, and a direct commitment are the hallmarks of world-class patron service."}
+    ]
+  }
+];
+
+var round=0,strikes=0,corrects=0,stressLevel=0,strikeLog=[],MAX_STRIKES=3,timerInterval=null,timerWidth=100;
+
+function startGame(){
+  round=0;strikes=0;corrects=0;stressLevel=0;strikeLog=[];
+  showScreen('screen-game');buildDots();updateMeter();renderRound();
+}
+
+function buildDots(){
+  var rp=document.getElementById('round-progress');rp.innerHTML='';
+  for(var i=0;i<ROUNDS.length;i++){
+    var d=document.createElement('div');
+    d.className='rp-dot'+(i===0?' current':'');d.id='dot-'+i;rp.appendChild(d);
+  }
+}
+
+function renderRound(){
+  var r=ROUNDS[round];
+  document.getElementById('round-num').textContent=round+1;
+  document.getElementById('prof-emoji').textContent=r.emoji;
+  document.getElementById('prof-mood').textContent='Mood: '+r.mood;
+  startTimer();
+  var chat=document.getElementById('chat-area');chat.innerHTML='';
+  if(round===0){var sys=document.createElement('div');sys.className='bubble-system';sys.textContent='Seminar in 45 minutes · Professor approaches the desk';chat.appendChild(sys);}
+  var bub=document.createElement('div');bub.className='bubble-prof';
+  var bn=document.createElement('div');bn.className='bubble-name';bn.textContent='PROF. PUNCTUAL';
+  bub.appendChild(bn);bub.appendChild(document.createTextNode(r.says));chat.appendChild(bub);
+  var ch=document.getElementById('choices');ch.innerHTML='';
+  for(var i=0;i<r.choices.length;i++){
+    (function(idx){
+      var c=r.choices[idx];
+      var btn=document.createElement('button');btn.className='choice';
+      var badge=c.pro?'<span class="pro-badge">Pro move?</span>':'';
+      btn.innerHTML='<div class="choice-letter">'+c.l+'</div><div class="choice-text">'+c.text+badge+'</div>';
+      btn.onclick=function(){pick(idx,btn);};ch.appendChild(btn);
+    })(i);
+  }
+  document.getElementById('fb-box').className='fb-box';
+  document.getElementById('fb-box').innerHTML='';
+  document.getElementById('next-btn').style.display='none';
+}
+
+function startTimer(){
+  clearInterval(timerInterval);timerWidth=100;
+  var bar=document.getElementById('timer-bar');
+  bar.style.width='100%';bar.style.background='var(--teal)';
+  timerInterval=setInterval(function(){
+    timerWidth-=1.5;if(timerWidth<0)timerWidth=0;
+    bar.style.width=timerWidth+'%';
+    if(timerWidth<30)bar.style.background='var(--red)';
+    else if(timerWidth<60)bar.style.background='var(--amber)';
+    if(timerWidth<=0)clearInterval(timerInterval);
+  },100);
+}
+
+function pick(idx,el){
+  clearInterval(timerInterval);
+  var r=ROUNDS[round];var c=r.choices[idx];
+  var all=document.querySelectorAll('.choice');
+  for(var i=0;i<all.length;i++){all[i].disabled=true;}
+  var ok=c.type==='win';var partial=c.type==='partial';
+  if(ok){corrects++;el.classList.add('res-win');updateDot(round,'win');}
+  else{strikes++;el.classList.add('res-loss');strikeLog.push({round:round+1,chose:c.text});updateDot(round,'loss');updateMeter();}
+  for(var j=0;j<all.length;j++){if(all[j]!==el)all[j].classList.add('res-dim');}
+  var chat=document.getElementById('chat-area');
+  var you=document.createElement('div');you.className='bubble-you';
+  var yn=document.createElement('div');yn.className='bubble-name';yn.style.color='var(--teal-light)';yn.textContent='YOU';
+  you.appendChild(yn);you.appendChild(document.createTextNode(c.text));chat.appendChild(you);chat.scrollTop=chat.scrollHeight;
+  var fb=document.getElementById('fb-box');
+  fb.className='fb-box show '+(ok?'fb-win':partial?'fb-partial':'fb-loss');
+  var cite=ok?'Professional Standard Met':partial?'Partial Credit — Room to Improve':'Service Standard Not Met';
+  fb.innerHTML=c.fb+'<br><span class="pro-cite">'+cite+'</span>';
+  if(strikes>=MAX_STRIKES){setTimeout(function(){showGameOver();},1300);return;}
+  var nb=document.getElementById('next-btn');nb.style.display='flex';
+  nb.textContent=round===ROUNDS.length-1?'View Results →':'Continue →';
+}
+
+function updateDot(i,type){
+  var d=document.getElementById('dot-'+i);
+  if(d){d.classList.remove('current');d.classList.add(type);}
+}
+
+function updateMeter(){
+  stressLevel=Math.min(strikes/MAX_STRIKES,1);
+  var pct=Math.round(stressLevel*100);
+  var offset=188.5-(188.5*stressLevel);
+  var circle=document.getElementById('stress-circle');
+  circle.style.strokeDashoffset=offset;
+  circle.style.stroke=pct<34?'var(--teal)':pct<67?'var(--amber)':'var(--red)';
+  document.getElementById('stress-pct').textContent=pct+'%';
+  document.getElementById('stress-pct').style.color=pct<34?'var(--teal-light)':pct<67?'#fcd369':'#ff6b7a';
+  var patience=Math.max(0,100-pct);
+  var pBar=document.getElementById('patience-bar');
+  pBar.style.width=patience+'%';
+  pBar.style.background=patience>60?'var(--teal)':patience>30?'var(--amber)':'var(--red)';
+  var plabels=['Patience: Holding','Patience: Strained','Patience: Critical','Patience: GONE'];
+  var pl=document.getElementById('patience-label');
+  pl.textContent=plabels[Math.min(strikes,3)];
+  pl.style.color=patience>60?'var(--teal-light)':patience>30?'#fcd369':'#ff6b7a';
+  var icons=document.getElementById('strikes-row').querySelectorAll('.strike-icon');
+  for(var i=0;i<icons.length;i++){icons[i].textContent=i<strikes?'🔴':'🟢';}
+  document.getElementById('strikes-num').textContent=strikes;
+  document.getElementById('strikes-pill').className='stat-pill'+(strikes>0?' danger':'');
+}
+
+function nextRound(){
+  round++;
+  if(round>=ROUNDS.length){showWin();return;}
+  var nd=document.getElementById('dot-'+round);if(nd){nd.classList.add('current');}
+  renderRound();
+}
+
+function showWin(){
+  showScreen('screen-win');
+  var score=Math.round(corrects/ROUNDS.length*100);
+  document.getElementById('win-correct').textContent=corrects;
+  document.getElementById('win-strikes').textContent=strikes;
+  document.getElementById('win-score').textContent=score+'%';
+  document.getElementById('win-sub').textContent=corrects===ROUNDS.length
+    ?'Flawless! Professor Punctual left satisfied and the discrepancy was properly logged. Outstanding service under pressure.'
+    :'Professor was ultimately satisfied with your alternative solutions. '+strikes+' strike'+(strikes!==1?'s':'')+' recorded — review the feedback to sharpen your responses.';
+}
+
+function showGameOver(){
+  showScreen('screen-gameover');
+  var html='You accumulated <strong>'+strikes+' strike'+(strikes!==1?'s':'')+'</strong>, depleting the professor\'s patience:<ul style="margin:10px 0 0 16px;display:flex;flex-direction:column;gap:6px">';
+  for(var i=0;i<strikeLog.length;i++){html+='<li>Round '+strikeLog[i].round+': <em>"'+strikeLog[i].chose.substring(0,80)+'..."</em></li>';}
+  html+='</ul>';
+  document.getElementById('go-review').innerHTML=html;
+}
+
+function restartGame(){
+  clearInterval(timerInterval);round=0;strikes=0;corrects=0;stressLevel=0;strikeLog=[];
+  updateMeter();showScreen('screen-game');buildDots();renderRound();
+}
+
+function showScreen(id){
+  var screens=document.querySelectorAll('.screen');
+  for(var i=0;i<screens.length;i++){screens[i].classList.remove('active');}
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
